@@ -1,68 +1,122 @@
-# Claude Development Workflow
+# Claude Dev Workflow
 
-Shared development patterns, ADR indexes, and workflow skills for Claude Code projects.
+A comprehensive development workflow system for Claude Code projects.
 
-## Setup
+## Features
 
-### Add to Project
+- **Skills** - Reusable commands (`/comms`, `/adr`, `/memory`, `/recall`, `/context`, `/reflect`, `/refine`)
+- **Patterns** - Code patterns with token-optimized format
+- **Indexes** - Fast lookup for ADRs, patterns, and work types
+- **Hooks** - Advisory reminders (pre/post implementation, testing)
+- **Scaffolds** - Ready-to-use directory structures for new projects
+
+## Quick Start
+
 ```bash
-cd your-project
-git submodule add <repo-url> .claude-workflow
+# Add to your project
+git submodule add https://github.com/yourusername/claude-dev-workflow.git .claude-workflow
+
+# Run setup
+./.claude-workflow/setup.sh
+
+# Or follow manual setup in SETUP.md
 ```
 
-### Enable Skills
-After adding submodule, configure `.claude/settings.json`:
-```json
-{
-  "skills": {
-    "context": { "enabled": true, "source": "../.claude-workflow/skills/context.skill.md" },
-    "reflect": { "enabled": true, "source": "../.claude-workflow/skills/reflect.skill.md" },
-    "refine": { "enabled": true, "source": "../.claude-workflow/skills/refine.skill.md" }
-  }
-}
-```
-
-### Project Memory Structure
-Create in your project:
-```
-memory/
-├── patterns/draft/
-├── patterns/active/
-├── sessions/
-└── state/workflow-state.md
-```
-
-## Workflow
-
-```
-/context → Implement → /reflect → (when triggered) → /refine
-```
-
-1. **Pre-implementation**: Run `/context` to load relevant ADRs and patterns
-2. **Implementation**: Follow loaded guidance, write tests (T1)
-3. **Post-implementation**: Run `/reflect` to capture learnings
-4. **Refinement**: Run `/refine` when triggers met (5 drafts OR milestone OR 2 weeks)
+See [SETUP.md](SETUP.md) for detailed instructions.
 
 ## Structure
 
 ```
-indexes/          Token-optimized lookups
-patterns/         Implementation guidance (draft→active→promoted)
-skills/           Skill definitions
-hooks/            Pre/post implementation prompts
-templates/        File templates
+claude-dev-workflow/
+├── skills/                 # Skill definitions
+│   ├── comms.md            # Inter-team communication
+│   ├── adr.md              # Architecture decisions
+│   ├── memory.md           # Memory vault management
+│   ├── recall.md           # Quick context loading
+│   ├── context.skill.md    # Pre-implementation context
+│   ├── reflect.skill.md    # Post-implementation reflection
+│   └── refine.skill.md     # Pattern refinement
+│
+├── patterns/               # Code patterns
+│   ├── active/             # Production-ready patterns
+│   ├── draft/              # Experimental patterns
+│   └── archived/           # Deprecated patterns
+│
+├── indexes/                # Token-optimized lookups
+│   ├── adr-index.md        # ADR quick reference
+│   ├── pattern-index.md    # Pattern quick reference
+│   └── work-type-index.md  # Work type to ADR/pattern mapping
+│
+├── hooks/                  # Advisory hooks
+│   ├── pre-implementation.md
+│   ├── post-implementation.md
+│   └── test-reminder.md
+│
+├── templates/              # Templates for new items
+│   ├── pattern-template.md
+│   ├── adr-template.md
+│   └── session-template.md
+│
+├── scaffolds/              # Directory scaffolds
+│   ├── dev_communication/  # Inter-team communication hub
+│   └── memory/             # Extended memory vault
+│
+├── SETUP.md                # Setup instructions
+├── setup.sh                # Automated setup script
+└── README.md               # This file
 ```
 
 ## Skills
 
-| Skill | Purpose |
-|-------|---------|
-| `/context` | Load relevant ADRs/patterns before implementation |
-| `/reflect` | Capture learnings after implementation |
-| `/refine` | Process accumulated patterns |
+| Skill | Trigger | Purpose |
+|-------|---------|---------|
+| comms | `/comms` | Manage inter-team messages, issues, status |
+| adr | `/adr` | Manage architecture decisions and gaps |
+| memory | `/memory` | Add entities, patterns, sessions to vault |
+| recall | `/recall` | Quick context loading from memory |
+| context | `/context` | Load relevant ADRs/patterns before implementing |
+| reflect | `/reflect` | Capture learnings after implementation |
+| refine | `/refine` | Review and promote patterns |
+
+## Workflow
+
+```
+/context → Implement → /reflect → (accumulate) → /refine
+```
+
+1. **Pre-implementation**: Run `/context` to load relevant ADRs and patterns
+2. **Implementation**: Follow loaded guidance, write tests per ADR-DEV-001
+3. **Post-implementation**: Run `/reflect` to capture learnings
+4. **Refinement**: Run `/refine` when patterns accumulate (5+ uses)
+
+## Scaffolds
+
+### dev_communication/
+
+Inter-team communication hub with:
+- Messaging (inbox/outbox per team)
+- Issue tracking (queue/active/completed)
+- Architecture decisions
+- Team coordination
+
+### memory/
+
+Extended memory vault with:
+- Context (project background)
+- Entities (system components)
+- Patterns (conventions)
+- Sessions (summaries)
 
 ## Updates
 
 ```bash
-git submodule update --remote
+cd .claude-workflow
+git pull origin master
+cd ..
+git add .claude-workflow
+git commit -m "Update claude-dev-workflow submodule"
 ```
+
+## License
+
+MIT
