@@ -1,7 +1,7 @@
 ---
 name: develop
 description: Mandatory development lifecycle - processes issues with full verification
-argument-hint: "[issue-id|all|quick <file>]"
+argument-hint: "[issue-id|all|quick <file>|team <issue-id>|team all]"
 ---
 
 # Development Lifecycle Skill
@@ -15,6 +15,8 @@ Enforces the mandatory development lifecycle for all code changes per ADR-DEV-00
 /develop UI-ISS-082         # Process specific issue
 /develop all                # Process all issues in queue
 /develop quick <file>       # Quick mode for trivial changes
+/develop team UI-ISS-082    # Process issue with agent team (parallel)
+/develop team all           # Process all issues with agent teams
 ```
 
 ## Team Detection (Portable)
@@ -203,6 +205,43 @@ blocked_issues = dev_communication/issues/{team}/active/
 
 ---
 
+### Phase 2T: Team Implementation (Agent Team Mode)
+
+When invoked with `team` keyword, Phase 2 is replaced with parallel execution.
+Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.
+
+**Role definitions:** `.claude-workflow/team-configs/agent-team-roles.json`
+
+**Steps:**
+
+1. **Lead analyzes issue and creates task plan**
+   - Select task dependency pattern (`newFeature`, `bugFix`, `complexFeature`)
+   - Create tasks with dependencies using the shared task list
+   - Assign file ownership per teammate (no overlapping files)
+
+2. **Lead spawns teammates** (Sonnet 4.5, max 3)
+   - Implementer: source code following FSD patterns
+   - Tester: unit/integration tests
+   - Researcher: codebase investigation (optional, plan approval required)
+
+3. **Enable delegate mode** (`Shift+Tab`)
+   - Lead coordinates only, does not write code
+
+4. **Teammates execute with hook enforcement**
+   - `TaskCompleted` hook: tsc, tests pass, tests exist
+   - `TeammateIdle` hook: no tsc errors, tests for modified files
+
+5. **Lead reviews, shuts down teammates, proceeds to Phase 3**
+
+**Task Patterns:**
+- New Feature: `researcher (optional) → implementer → tester`
+- Bug Fix: `tester (failing test) → implementer (fix) → tester (verify)`
+- Complex: `researcher → [impl-A, impl-B] (parallel) → tester`
+
+**Fallback:** If teammate blocked 3+ times by hooks, lead takes over directly.
+
+---
+
 ### Phase 3: Verification (MANDATORY - BLOCKING)
 
 **CANNOT proceed to next phase without ALL checks passing**
@@ -369,3 +408,6 @@ issues     = dev_communication/issues/{team}/
 - **ADR:** `dev_communication/architecture/decisions/ADR-DEV-002-DEVELOPMENT-LIFECYCLE.md`
 - **Config:** `memory/prompts/team-configs/development-lifecycle.md`
 - **Testing:** `dev_communication/architecture/decisions/ADR-DEV-001-TESTING-STRATEGY.md`
+- **Code Reviewer:** `.claude-workflow/team-configs/code-reviewer-config.json`
+- **Agent Team Roles:** `.claude-workflow/team-configs/agent-team-roles.json`
+- **Agent Team Hooks:** `.claude-workflow/team-configs/agent-team-hooks-guide.md`
