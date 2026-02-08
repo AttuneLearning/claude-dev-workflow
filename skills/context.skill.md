@@ -1,40 +1,56 @@
 ---
 name: context
 trigger: /context
-description: Load relevant ADRs and patterns before implementation
+description: Load relevant ADRs, patterns, and memory before implementation
 auto_trigger: false
+argument-hint: "[quick|work-type|topic]"
 ---
 
 # Context Loading Skill
 
-Pre-implementation context loading for relevant ADRs and patterns.
+Pre-implementation context loading. Combines ADR lookup, pattern loading, and memory recall.
 
 ## Usage
 
 ```
 /context                    # Auto-detect work type from conversation
+/context quick              # Quick orientation (memory + recent activity only)
 /context new-endpoint       # Explicit work type
-/context bug-fix,testing    # Multiple work types
+/context certificates       # Search by topic
 ```
 
-## Execution Steps
+## Quick Mode (`/context quick`)
 
-1. **Detect Work Type**
-   - Parse recent messages for keywords
-   - Match against `indexes/work-type-index.md`
-   - If ambiguous, list detected types and ask
+Fast orientation for session start or context recovery:
 
-2. **Load Index**
-   - Read `indexes/adr-index.md`
-   - Read `indexes/pattern-index.md`
-   - Filter to matching work types
+1. Read `memory/memory-log.md` for recent activity
+2. Read `memory/context/project-overview.md`
+3. If topic mentioned, search `memory/` for keywords
+4. Output brief summary:
+   ```
+   ## Context Loaded
+   **Recent Activity:** [from memory-log]
+   **Relevant:** [matching entities/patterns]
+   ```
 
-3. **Load Relevant Files**
-   - ADRs: Load only decision section (skip rationale unless requested)
-   - Patterns: Load full active patterns for work type
-   - Max 3 ADRs, 4 patterns per invocation
+## Full Mode (default)
 
-4. **Output Format**
+1. **Detect Work Type** from conversation keywords:
+   | Work Type | Keywords |
+   |-----------|----------|
+   | new-endpoint | route, endpoint, api, controller |
+   | new-model | model, schema, collection, mongoose |
+   | bug-fix | fix, bug, issue, broken, error |
+   | auth-change | auth, permission, access, role |
+   | testing | test, spec, jest, coverage |
+
+2. **Load ADRs** (max 3) — decision section only, skip rationale unless requested
+
+3. **Load Patterns** (max 4) from `memory/patterns/` matching work type
+
+4. **Load Memory** — search `memory/entities/` and `memory/context/` for topic keywords
+
+5. **Output:**
    ```
    ## Context for: {work-type}
 
@@ -43,27 +59,17 @@ Pre-implementation context loading for relevant ADRs and patterns.
 
    ### Patterns
    - **{name}**: {summary}
-     ```{key code snippet}```
+
+   ### Memory
+   - **{entity/context}**: {relevant notes}
 
    ### Checklist
-   - [ ] {pattern checklist items}
+   - [ ] {applicable checklist items}
    ```
-
-## Work Type Keywords
-
-| Work Type | Keywords |
-|-----------|----------|
-| new-endpoint | route, endpoint, api, controller, REST |
-| new-model | model, schema, collection, mongoose |
-| new-feature | feature, implement, add, create |
-| bug-fix | fix, bug, issue, broken, error |
-| refactor | refactor, clean, improve, optimize |
-| auth-change | auth, permission, access, role |
-| testing | test, spec, jest, coverage |
 
 ## Token Budget
 
 Target: <2000 tokens per invocation
 - Index scan: ~200 tokens
-- ADR summaries: ~150 tokens each (450 max)
-- Pattern loads: ~300 tokens each (1200 max)
+- ADR summaries: ~150 each (450 max)
+- Pattern loads: ~300 each (1200 max)

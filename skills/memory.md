@@ -1,77 +1,63 @@
 ---
 name: memory
 description: Manage the extended memory vault
-argument-hint: "[search|add|status]"
+argument-hint: "[search|add|note|status]"
 ---
 
 # Memory Vault Management
 
 Manage the extended memory vault at `./memory/`.
 
-## Available Actions
+## Actions
 
-Based on the user's request, perform one of these actions:
+### 1. Quick Note (most common)
+**Trigger:** `/memory note <text>` or `/memory add <text>`
 
-### 1. Search Memory
-If the user wants to find something:
+Append a timestamped note to `memory/notes.md` (create if missing):
+```markdown
+- **YYYY-MM-DD**: <text>
+```
+No index updates needed. Fast, low-ceremony capture.
+
+### 2. Search Memory
+**Trigger:** `/memory search <keywords>` or `/memory <keywords>`
+
 - Search across `memory/` using Grep for keywords
-- Check relevant index files (`memory/entities/index.md`, etc.)
-- Return relevant memory files with summaries
+- Check index files (`memory/entities/index.md`, `memory/patterns/index.md`)
+- Return matching files with summaries
 
-### 2. Add Entity
-If the user wants to remember a concept/component:
+### 3. Add Entity
+**Trigger:** `/memory entity <name>`
+
 - Use template: `memory/templates/entity-template.md`
-- Create file: `memory/entities/[slug].md`
-- Update: `memory/entities/index.md`
-- Update: `memory/memory-log.md`
+- Create: `memory/entities/[slug].md`
+- Update: `memory/entities/index.md` and `memory/memory-log.md`
 
-### 3. Add Pattern
-If the user wants to document a pattern:
+### 4. Add Pattern
+**Trigger:** `/memory pattern <name>`
+
 - Use template: `memory/templates/pattern-template.md`
-- Create file: `memory/patterns/[slug].md`
-- Update: `memory/patterns/index.md`
-- Update: `memory/memory-log.md`
+- Create: `memory/patterns/[slug].md`
+- Update: `memory/patterns/index.md` and `memory/memory-log.md`
 
-### 4. Add Session Summary
-If the user wants to record a session:
+### 5. Add Session Summary
+**Trigger:** `/memory session`
+
 - Use template: `memory/templates/session-template.md`
-- Create file: `memory/sessions/YYYY-MM-DD-[slug].md`
-- Update: `memory/sessions/index.md`
-- Update: `memory/memory-log.md`
-
-### 5. Add Context
-If the user wants to add background knowledge:
-- Use template: `memory/templates/context-template.md`
-- Create file: `memory/context/[slug].md`
-- Update: `memory/context/index.md`
+- Create: `memory/sessions/YYYY-MM-DD-[slug].md`
 - Update: `memory/memory-log.md`
 
 ### 6. Show Status
-If the user wants to see memory status:
-- Read `memory/memory-log.md`
-- Count files in each category
-- Show recent additions
+**Trigger:** `/memory status`
+
+- Read `memory/memory-log.md`, count files per category, show recent additions
 
 ## Wikilink Format
 
-Always use Obsidian wikilink syntax for cross-references:
-```markdown
-[[../memory-log]]
-[[entities/entity-name]]
-[[patterns/pattern-name]]
-```
-
-## Memory Log Entry Format
-
-When adding to `memory/memory-log.md`:
-```markdown
-| YYYY-MM-DD | type | Title | #tags | [[folder/filename]] |
-```
+Use Obsidian syntax for cross-references: `[[entities/entity-name]]`, `[[patterns/pattern-name]]`
 
 ## Guidelines
 
 - Keep entries concise but complete
 - Use consistent naming (lowercase, hyphens)
-- Always update index files and memory-log
-- Add relevant tags for discoverability
-- Link related memories with wikilinks
+- For quick captures, use `/memory note` — promote to entity/pattern later if needed
