@@ -18,6 +18,7 @@ principles:
   - Each team triages its own inbound messages and creates its own issues
   - No team creates issues in another team's queue
   - The human supervisor can create issues anywhere
+  - Commit and push immediately after each completed issue or completed phase milestone
 
 # -----------------------------------------------------------------------------
 # Issue Ownership
@@ -141,6 +142,7 @@ issue_lifecycle:
         - "Write unit and/or integration tests"
         - "Run tests: npx jest [path]"
         - "Verify TypeScript: npx tsc --noEmit (0 errors)"
+        - "When a phase milestone is complete and stable: commit + push immediately"
       exit_criteria:
         - Code implemented
         - Tests written and passing
@@ -165,10 +167,13 @@ issue_lifecycle:
       steps:
         - "Create session file: {memory_root}/sessions/{date}-{issue-slug}.md"
         - "Update issue file: add commit hash, set status COMPLETE"
+        - "Create completion commit (include issue/phase identifier)"
+        - "Push completion commit to remote immediately"
         - "Move issue file: active/ → completed/"
       exit_criteria:
         - Session file exists
         - Issue file in completed/ with commit hash
+        - Completion commit is present on remote
 
     comms_response:
       order: 5
