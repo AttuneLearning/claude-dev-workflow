@@ -5,8 +5,14 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+DEFAULT_PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+if [[ "$(basename "$SCRIPT_DIR")" == "claude-workflow" && "$(basename "$DEFAULT_PROJECT_ROOT")" == "agent-workflow" ]]; then
+    DEFAULT_PROJECT_ROOT="$(dirname "$DEFAULT_PROJECT_ROOT")"
+fi
+PROJECT_ROOT="${WORKSPACE_ROOT:-$DEFAULT_PROJECT_ROOT}"
+PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd -P)"
 
 echo "Claude Dev Workflow Setup"
 echo "========================="

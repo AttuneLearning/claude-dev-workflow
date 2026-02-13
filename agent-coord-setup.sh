@@ -5,10 +5,12 @@ SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 CLAUDE_SETUP="$SCRIPT_DIR/claude-workflow/setup.sh"
 CODEX_INSTALL="$SCRIPT_DIR/codex-workflow/install.sh"
+WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd -P)}"
 
 MODE="both" # claude | codex | both
 TEAM=""
 LIST_TEAMS=0
+USER_SET_WORKSPACE_ROOT=0
 declare -a CODEX_ARGS=()
 
 usage() {
@@ -72,6 +74,9 @@ parse_args() {
         ;;
       --target|--pack-name|--workspace-root)
         [[ $# -ge 2 ]] || { echo "Error: $1 requires a value" >&2; exit 2; }
+        if [[ "$1" == "--workspace-root" ]]; then
+          USER_SET_WORKSPACE_ROOT=1
+        fi
         CODEX_ARGS+=("$1" "$2")
         shift 2
         ;;
@@ -96,7 +101,7 @@ run_claude_setup() {
   require_file "$CLAUDE_SETUP"
   echo ""
   echo "==> Running Claude workflow setup"
-  bash "$CLAUDE_SETUP"
+  WORKSPACE_ROOT="$WORKSPACE_ROOT" bash "$CLAUDE_SETUP"
 }
 
 prompt_team_if_needed() {
@@ -105,7 +110,11 @@ prompt_team_if_needed() {
   fi
   echo ""
   echo "Codex team not specified."
-  bash "$CODEX_INSTALL" --list-teams
+  if [[ "$USER_SET_WORKSPACE_ROOT" -eq 1 ]]; then
+    bash "$CODEX_INSTALL" --list-teams
+  else
+    bash "$CODEX_INSTALL" --workspace-root "$WORKSPACE_ROOT" --list-teams
+  fi
   read -r -p "Enter team id for Codex install: " TEAM
   if [[ -z "$TEAM" ]]; then
     echo "Error: team id is required for Codex install." >&2
@@ -125,7 +134,11 @@ run_codex_install() {
 
   echo ""
   echo "==> Running Codex workflow install for team: $TEAM"
-  bash "$CODEX_INSTALL" --team "$TEAM" "${CODEX_ARGS[@]}"
+  if [[ "$USER_SET_WORKSPACE_ROOT" -eq 1 ]]; then
+    bash "$CODEX_INSTALL" --team "$TEAM" "${CODEX_ARGS[@]}"
+  else
+    bash "$CODEX_INSTALL" --workspace-root "$WORKSPACE_ROOT" --team "$TEAM" "${CODEX_ARGS[@]}"
+  fi
 }
 
 main() {
